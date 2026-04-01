@@ -29,13 +29,6 @@ interface Props {
 
 // ── 格式化工具 ──────────────────────────────────────────
 
-function formatTokens(n: number | undefined): string {
-  if (n === undefined || n === null) return "—";
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toString();
-}
-
 function formatCount(n: number | undefined): string {
   if (n === undefined || n === null) return "—";
   return n.toLocaleString();
@@ -217,9 +210,9 @@ function BenefitSection({
     expired: "已过期",
     SUBSCRIPTION_STATUS_EXPIRED: "已过期",
   };
-  const normalizedStatus = subscriptionStatus?.toLowerCase().replace("subscription_status_", "");
+  const normalizedStatus = subscriptionStatus?.toLowerCase().replace("subscription_status_", "") ?? "";
   const statusText = subscriptionStatus
-    ? statusMap[subscriptionStatus] ?? statusMap[normalizedStatus] ?? subscriptionStatus
+    ? statusMap[subscriptionStatus] ?? (normalizedStatus ? statusMap[normalizedStatus] : undefined) ?? subscriptionStatus
     : "订阅有效";
   const isActive =
     subscriptionStatus === "active" ||

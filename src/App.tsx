@@ -1,7 +1,7 @@
 // ============================
 // CodexBar Windows - 主 App
 // ============================
-import React, { useState } from "react";
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { ProviderCard } from "./components/ProviderCard";
 import { ZhipuCard } from "./components/ZhipuCard";
@@ -13,7 +13,7 @@ import "./App.css";
 
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
-  const { config, saveConfig, saving } = useAppConfig();
+  const { config, saveConfig } = useAppConfig();
   const { usageList, isRefreshing, lastRefresh, refresh, updateProvider } = useUsageData(
     config?.refreshInterval ?? 60
   );
