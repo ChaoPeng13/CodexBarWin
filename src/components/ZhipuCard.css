@@ -1,0 +1,437 @@
+/* ============================
+   ZhipuCard 专用样式
+   参照官方截图 bigmodel.cn/usercenter/glm-coding/usage
+   ============================ */
+
+/* ── 卡片整体 ─────────────────────── */
+.zhipu-card .card-body {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── 标题行（name + 等级徽章） ────── */
+.z-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.z-level-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  line-height: 1.5;
+}
+
+/* ════════════════════════════════════
+   用量统计网格：两列 + MCP 半列
+   ════════════════════════════════════ */
+
+.z-quota-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+}
+
+/* 第一行：5小时 + 每周并排 */
+.z-quota-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* 第二行：MCP 占左半 */
+.z-quota-row-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.z-quota-row-half > :first-child {
+  grid-column: 1;
+}
+
+/* ── 单个额度卡 ───────────────────── */
+.z-quota-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--surface-1, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-radius: 8px;
+  padding: 10px 12px 10px;
+}
+
+.z-quota-box-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 大字号百分比行（核心：参照官方截图） ── */
+.z-pct-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  line-height: 1;
+}
+
+.z-big-pct {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary, #e8e8e8);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.z-big-pct .z-pct-sign {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.z-big-pct.med {
+  color: var(--warning, #f59e0b);
+}
+
+.z-big-pct.high {
+  color: var(--error, #ef4444);
+}
+
+.z-pct-label {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  font-weight: 400;
+}
+
+/* ── 附加信息（已用/总量） ──────────── */
+.z-quota-sub {
+  font-size: 11px;
+  color: var(--text-tertiary, #666);
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.z-sub-val {
+  font-weight: 600;
+  color: var(--text-secondary, #aaa);
+}
+
+.z-sub-sep {
+  color: var(--text-tertiary, #555);
+  margin: 0 1px;
+}
+
+.z-sub-total {
+  color: var(--text-tertiary, #666);
+}
+
+.z-sub-unit {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  margin-left: 1px;
+}
+
+/* ── 进度条 ───────────────────────── */
+.z-bar-track {
+  width: 100%;
+  height: 5px;
+  background: var(--surface-2, rgba(255,255,255,0.08));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.z-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ── 重置时间（具体时间戳，参照截图） ── */
+.z-reset-time {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  margin-top: -1px;
+}
+
+/* ════════════════════════════════════
+   Section 区块（模型用量等）
+   ════════════════════════════════════ */
+
+.z-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 0 10px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+}
+
+.z-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.z-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+}
+
+.z-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── 原始 bucket 兜底 ────────────── */
+.z-quota-row-plain {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.z-bucket-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.z-bucket-label {
+  font-size: 12px;
+  color: var(--text-primary, #e0e0e0);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.z-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #888);
+  flex-shrink: 0;
+}
+
+/* ── 使用详情 Tab 行 ──────────────────── */
+.z-tab-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.z-tab-btns {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border, rgba(255,255,255,0.10));
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.z-tab-btn {
+  background: none;
+  border: none;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.6;
+}
+
+.z-tab-btn:hover {
+  background: var(--surface-1, rgba(255,255,255,0.06));
+  color: var(--text-primary, #e0e0e0);
+}
+
+.z-tab-btn.active {
+  background: var(--accent, #2563eb);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── 空态提示 ─────────────────────── */
+.z-empty-hint {
+  font-size: 11px;
+  color: var(--text-tertiary, #888);
+  padding: 6px 0 2px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* ── 用量汇总行（总 tokens / 总调用次数）─── */
+.z-usage-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0 4px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.z-usage-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.z-usage-summary-label {
+  font-size: 11px;
+  color: var(--text-tertiary, #888);
+}
+
+.z-usage-summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 天数切换行 ──────────────────── */
+.z-days-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 6px;
+}
+
+.z-days-label {
+  font-size: 11px;
+  color: var(--text-tertiary, #888);
+  white-space: nowrap;
+}
+
+.z-days-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.z-days-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.12));
+  background: transparent;
+  color: var(--text-secondary, #aaa);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.z-days-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-primary, #fff);
+}
+
+.z-days-btn.active {
+  background: var(--accent-color, #2563eb);
+  color: #fff;
+  border-color: transparent;
+}
+
+.z-days-btn.loading {
+  opacity: 0.5;
+}
+
+.z-days-loading {
+  font-size: 11px;
+  color: var(--text-tertiary, #888);
+  font-style: italic;
+}
+
+/* ── 展开按钮 ─────────────────────── */
+.z-expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: var(--accent, #2563eb);
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.z-expand-btn:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ── 模型用量区 ───────────────────── */
+.z-model-section {
+  margin-top: 0;
+}
+
+.z-model-total-hint {
+  font-size: 10.5px;
+  color: var(--text-tertiary, #666);
+}
+
+.z-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.z-model-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.z-model-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.z-model-code {
+  color: var(--text-secondary, #999);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+}
+
+.z-model-tokens {
+  color: var(--text-primary, #e0e0e0);
+  font-weight: 500;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.z-model-bar-track {
+  width: 100%;
+  height: 3px;
+  background: var(--surface-2, rgba(255,255,255,0.08));
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.z-model-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  opacity: 0.65;
+  transition: width 0.5s ease;
+}

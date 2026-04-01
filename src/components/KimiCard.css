@@ -1,0 +1,371 @@
+/* ============================
+   KimiCard 专用样式
+   参照智谱 GLM 布局风格，为 Kimi (月之暗面) 设计
+   4个卡片：本周用量 / 频限明细 / 我的权益 / 模型权限
+   ============================ */
+
+/* ── 卡片整体 ─────────────────────── */
+.kimi-card .card-body {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── 标题行（name + 套餐徽章） ─────── */
+.k-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.k-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: #6366f1;
+  color: #fff;
+  line-height: 1.5;
+}
+
+/* ════════════════════════════════════
+   用量统计网格：2x2 四卡布局
+   ════════════════════════════════════ */
+
+.k-quota-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+}
+
+/* 每行两列，用于【本周用量+频限明细】和【我的权益+模型权限】 */
+.k-quota-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* 单列宽（模型权限列表单独撑满） */
+.k-quota-row-full {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+/* ── 单个额度卡 ───────────────────── */
+.k-quota-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--surface-1, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.k-quota-box-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 大字号百分比行 ─────────────────── */
+.k-pct-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  line-height: 1;
+}
+
+.k-big-pct {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary, #e8e8e8);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+.k-big-pct .k-pct-sign {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.k-big-pct.med {
+  color: var(--warning, #f59e0b);
+}
+
+.k-big-pct.high {
+  color: var(--error, #ef4444);
+}
+
+.k-pct-label {
+  font-size: 12px;
+  color: var(--text-secondary, #999);
+  font-weight: 400;
+}
+
+/* ── 附加信息（已用/总量） ──────────── */
+.k-quota-sub {
+  font-size: 11px;
+  color: var(--text-tertiary, #666);
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.k-sub-val {
+  font-weight: 600;
+  color: var(--text-secondary, #aaa);
+}
+
+.k-sub-sep {
+  color: var(--text-tertiary, #555);
+  margin: 0 1px;
+}
+
+.k-sub-total {
+  color: var(--text-tertiary, #666);
+}
+
+.k-sub-unit {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  margin-left: 1px;
+}
+
+/* ── 进度条 ───────────────────────── */
+.k-bar-track {
+  width: 100%;
+  height: 5px;
+  background: var(--surface-2, rgba(255,255,255,0.08));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.k-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ── 重置时间 ─────────────────────── */
+.k-reset-time {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  margin-top: -1px;
+}
+
+/* ── 空态提示 ─────────────────────── */
+.k-empty {
+  font-size: 11px;
+  color: var(--text-tertiary, #888);
+  padding: 2px 0;
+  opacity: 0.7;
+}
+
+/* ════════════════════════════════════
+   我的权益卡片（plan_name / status）
+   ════════════════════════════════════ */
+
+.k-benefit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--surface-1, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.k-benefit-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+}
+
+.k-benefit-plan {
+  font-size: 18px;
+  font-weight: 700;
+  color: #6366f1;
+  line-height: 1.2;
+}
+
+.k-benefit-sub {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+}
+
+.k-benefit-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: var(--text-secondary, #aaa);
+}
+
+.k-benefit-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.k-benefit-dot.inactive {
+  background: #ef4444;
+}
+
+/* 权益列表 */
+.k-benefit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border, rgba(255,255,255,0.06));
+}
+
+.k-benefit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 10px;
+  padding: 2px 0;
+}
+
+.k-benefit-feature {
+  color: var(--text-secondary, #aaa);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.k-benefit-level {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.k-benefit-level.trial {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
+.k-benefit-level.free {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.k-benefit-level.vip {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.k-benefit-count {
+  font-size: 9px;
+  color: var(--text-tertiary, #666);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════
+   模型权限卡片（模型列表）
+   ════════════════════════════════════ */
+
+.k-models-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--surface-1, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.k-models-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+}
+
+.k-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.k-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.04));
+}
+
+.k-model-row:last-child {
+  border-bottom: none;
+}
+
+.k-model-id {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  color: var(--text-primary, #e0e0e0);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.k-model-id.flagship {
+  color: #6366f1;
+  font-weight: 700;
+}
+
+.k-model-desc {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.k-expand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: #6366f1;
+  cursor: pointer;
+  opacity: 0.85;
+  margin-top: 2px;
+  align-self: flex-start;
+}
+
+.k-expand-btn:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ── 更新时间 ─────────────────────── */
+.k-footer-time {
+  font-size: 10px;
+  color: var(--text-tertiary, #666);
+  padding-top: 6px;
+  text-align: right;
+}
