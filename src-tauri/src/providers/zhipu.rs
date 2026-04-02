@@ -4,9 +4,18 @@
 // Auth: Authorization: Bearer <API_KEY>
 //
 // limits 数组结构：
-//   - TOKENS_LIMIT: 5小时滑动窗口 (unit≈5) 和每周额度 (unit≈168/7)
+//   - TOKENS_LIMIT:
+//       unit=3 (小时), number=5  → 每5小时滑动窗口额度
+//       unit=6 (周),   number=1  → 每周 Token 总额度
 //     有时只有 percentage，没有 currentValue/usage
 //   - TIME_LIMIT: MCP 月度调用次数，有完整 currentValue/usage/remaining
+//
+// unit 字段语义（由 API 实测确认）：
+//   3 = 小时（HOUR）
+//   5 = 天（DAY）  [保留兼容]
+//   6 = 周（WEEK）
+//   7 = 月（MONTH）[保留兼容]
+// number 字段 = 对应单位的数量（如 number=5 表示5个小时）
 // ============================
 
 use anyhow::Result;
@@ -203,8 +212,13 @@ async fn try_fetch(config: &ProviderConfig) -> Result<UsageData> {
     }
 
     // ── 第一步：收集所有 TOKENS_LIMIT 条目 ──────────────
-    // 将 TOKENS_LIMIT 的多条记录先全部收集，再根据 nextResetTime 排序区分
-    let mut tokens_items: Vec<(f64, Option<u64>, Option<u64>, Option<u64>, i64)> = Vec::new();
+    // unit 字段语义（API 实测）：
+    //   3 = 小时（HOUR），number=N → 每 N 小时窗口（如 number=5 → 5小时）
+    //   6 = 周（WEEK），number=N  → 每 N 周额度（如 number=1 → 每周）
+    // 直接用 unit 区分，不再依赖 nextResetTime 排序
+    let mut window_quota: Option<ZhipuWindowQuota> = None; // unit=3 (小时)
+    let mut week_quota: Option<ZhipuWeekQuota> = None;     // unit=6 (周)
+    let mut tokens_fallback: Vec<(f64, Option<u64>, Option<u64>, Option<u64>, i64)> = Vec::new(); // 兜底
     let mut mcp_quota: Option<ZhipuMcpQuota> = None;
     let mut raw_buckets: Vec<ZhipuRawBucket> = Vec::new();
 
@@ -238,7 +252,37 @@ async fn try_fetch(config: &ProviderConfig) -> Result<UsageData> {
 
         match lt {
             "TOKENS_LIMIT" => {
-                tokens_items.push((pct, cur, total, remaining, reset_ms));
+                match unit_num {
+                    3 => {
+                        // unit=3 (小时) → 5小时滑动窗口
+                        // 若已存在则保留（取第一个，通常只有1条）
+                        if window_quota.is_none() {
+                            window_quota = Some(ZhipuWindowQuota {
+                                current_value: cur,
+                                total,
+                                percent: pct,
+                                remaining,
+                                next_reset_ms: reset_ms,
+                            });
+                        }
+                    }
+                    6 => {
+                        // unit=6 (周) → 每周 Token 总额度
+                        if week_quota.is_none() {
+                            week_quota = Some(ZhipuWeekQuota {
+                                current_value: cur,
+                                total,
+                                percent: pct,
+                                remaining,
+                                next_reset_ms: reset_ms,
+                            });
+                        }
+                    }
+                    _ => {
+                        // 其他 unit 值：暂存为兜底，后续按 nextResetTime 分配
+                        tokens_fallback.push((pct, cur, total, remaining, reset_ms));
+                    }
+                }
             }
             "TIME_LIMIT" => {
                 // TIME_LIMIT = MCP 月度调用次数
@@ -256,16 +300,12 @@ async fn try_fetch(config: &ProviderConfig) -> Result<UsageData> {
         }
     }
 
-    // ── 第二步：区分 5小时窗口 vs 每周额度 ──────────────
-    // 区分策略（优先级从高到低）：
-    //   1. nextResetTime 最小（最快到期）的 = 5小时窗口
-    //   2. nextResetTime 较大（周期更长）的 = 每周额度
-    // 若只有1条，则判断重置时间距今是否 ≤ 9小时
-    //   是 = window_quota，否 = week_quota（降级：两者都设同一条）
-    let (window_quota, week_quota) = match tokens_items.len() {
-        0 => (None, None),
-        1 => {
-            let (pct, cur, total, remaining, reset_ms) = tokens_items.remove(0);
+    // ── 第二步：兜底处理（unit 未命中 3/6 的 TOKENS_LIMIT 条目）──
+    // 按 nextResetTime 升序：最小的 = 5小时窗口；最大的 = 每周额度
+    if !tokens_fallback.is_empty() {
+        tokens_fallback.sort_by_key(|t| t.4);
+        if window_quota.is_none() {
+            let (pct, cur, total, remaining, reset_ms) = tokens_fallback[0];
             let diff_h = if reset_ms > now_ms {
                 (reset_ms - now_ms) / 3_600_000
             } else {
@@ -273,33 +313,22 @@ async fn try_fetch(config: &ProviderConfig) -> Result<UsageData> {
             };
             if diff_h <= 9 {
                 // 9小时内到期 → 5小时窗口
-                (
-                    Some(ZhipuWindowQuota { current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms }),
-                    None,
-                )
-            } else {
-                // 周额度（当做既是5h也是周？还是只设周）
-                // 策略：给 window_quota 也填上，让UI能显示
-                let wq = ZhipuWindowQuota { current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms };
-                let wkq = ZhipuWeekQuota { current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms };
-                (Some(wq), Some(wkq))
+                window_quota = Some(ZhipuWindowQuota {
+                    current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms,
+                });
+            } else if week_quota.is_none() {
+                week_quota = Some(ZhipuWeekQuota {
+                    current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms,
+                });
             }
         }
-        _ => {
-            // ≥2 条：按 reset_ms 升序排序，最小的 = 5小时，较大的 = 每周
-            tokens_items.sort_by_key(|t| t.4);
-            let (p0, c0, t0, r0, ms0) = tokens_items[0];
-            let window = ZhipuWindowQuota {
-                current_value: c0, total: t0, percent: p0, remaining: r0, next_reset_ms: ms0,
-            };
-            // 取 reset_ms 最大的一条作为周额度
-            let (p1, c1, t1, r1, ms1) = *tokens_items.last().unwrap();
-            let week = ZhipuWeekQuota {
-                current_value: c1, total: t1, percent: p1, remaining: r1, next_reset_ms: ms1,
-            };
-            (Some(window), Some(week))
+        if tokens_fallback.len() >= 2 && week_quota.is_none() {
+            let (pct, cur, total, remaining, reset_ms) = *tokens_fallback.last().unwrap();
+            week_quota = Some(ZhipuWeekQuota {
+                current_value: cur, total, percent: pct, remaining, next_reset_ms: reset_ms,
+            });
         }
-    };
+    }
 
     // ── 解析模型用量接口（/model-usage）─────────────────────
     let (model_usages, total_tokens_usage, total_model_call_count) =
@@ -383,9 +412,15 @@ fn parse_unit(val: &Option<serde_json::Value>) -> u32 {
 }
 
 /// 判断是否为每周（7天）额度
-/// 条件：unit ≥ 100（7天 = 168小时）或 number 字段为 "week"
+/// 条件：unit=6（周单位）或 unit ≥ 100（旧逻辑兼容，如 168小时）
+/// 或 number 字段为 "week"
 fn is_week_unit(unit: u32, number: &Option<serde_json::Value>) -> bool {
+    if unit == 6 {
+        // unit=6 明确表示「周」单位
+        return true;
+    }
     if unit >= 100 {
+        // 旧逻辑兼容：unit 直接表示小时数，≥100 小时约等于周粒度
         return true;
     }
     match number {
@@ -399,19 +434,51 @@ fn is_week_unit(unit: u32, number: &Option<serde_json::Value>) -> bool {
 }
 
 /// 根据 limit_type + unit + number 构造可读标签
+/// unit 语义：3=小时(HOUR), 5=天(DAY), 6=周(WEEK), 7=月(MONTH)
 fn build_label(limit_type: &str, unit: u32, number: &Option<serde_json::Value>) -> String {
     match limit_type {
         "TIME_LIMIT" => "MCP 月度额度".to_string(),
         "TOKENS_LIMIT" => {
-            if is_week_unit(unit, number) {
-                "每周 Token 额度".to_string()
-            } else {
-                match unit {
-                    0 | 1 => "Token 月额度".to_string(),
-                    2..=6 => format!("{unit}小时 Token 窗口"),
-                    7 => "每日 Token 额度".to_string(),
-                    8..=30 => "每周 Token 额度".to_string(),
-                    _ => "Token 月额度".to_string(),
+            // 提取 number 数值（默认1）
+            let num = match number {
+                Some(serde_json::Value::Number(n)) => n.as_u64().unwrap_or(1),
+                Some(serde_json::Value::String(s)) => s.parse::<u64>().unwrap_or(1),
+                _ => 1,
+            };
+            match unit {
+                3 => {
+                    // 小时单位
+                    if num == 1 { "每小时 Token 额度".to_string() }
+                    else { format!("每{num}小时 Token 额度") }
+                }
+                5 => {
+                    // 天单位
+                    if num == 1 { "每日 Token 额度".to_string() }
+                    else { format!("每{num}天 Token 额度") }
+                }
+                6 => {
+                    // 周单位
+                    if num == 1 { "每周 Token 额度".to_string() }
+                    else { format!("每{num}周 Token 额度") }
+                }
+                7 => {
+                    // 月单位
+                    if num == 1 { "每月 Token 额度".to_string() }
+                    else { format!("每{num}月 Token 额度") }
+                }
+                _ => {
+                    // 旧逻辑兼容：unit 直接表示小时数
+                    if is_week_unit(unit, number) {
+                        "每周 Token 额度".to_string()
+                    } else {
+                        match unit {
+                            0 | 1 => "Token 月额度".to_string(),
+                            2..=6 => format!("{unit}小时 Token 窗口"),
+                            7 => "每日 Token 额度".to_string(),
+                            8..=30 => "每周 Token 额度".to_string(),
+                            _ => "Token 月额度".to_string(),
+                        }
+                    }
                 }
             }
         }
